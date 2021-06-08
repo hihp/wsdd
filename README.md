@@ -12,7 +12,7 @@ WORKGROUP: Workgroup name
 
 DOMAIN: Report being a member of an AD DOMAIN. Disables WORKGROUP if set. 
 
-LOCALSUBNET: The fixed part of your local network IP4 addresse, with points masked by a double backslash, e.g. "192\\.168\\.1"
+LOCALSUBNET: The fixed part of your local network IP4 addresse, with points masked by a double backslash, e.g. "192\\\\.168\\\\.1"
 
 ## Running container
 ### From command line
