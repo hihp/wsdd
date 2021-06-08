@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# get IP address of host machine on which docker runs
+hostip=$(nslookup ${HOSTNAME} | egrep -o "Address: ${LOCALSUBNET}\.[0-9]*" | egrep -o "${LOCALSUBNET}\.[0-9]*")
+
+# calculate URN-UUID for WSD server
+WSDDUUID=$(uuidgen --sha1 --namespace @dns --name ${HOSTNAME})
+
+# edit WSD server URN-UUID into request data file
+sed -i "s/xxxToxx/${WSDDUUID}/g" wsd.xml
+
+# make request
+result=$(curl --silent --fail --header 'Content-Type: application/soap+xml' --data @wsd.xml http://${hostip}:5357/${WSDDUUID})
+
+# depending on success or failure, return either 0 or 1
+if [ $? -eq 0 ]
+then
+  exit 0
+fi
+
+exit 1
