@@ -5,6 +5,8 @@ wsdd implements a Web Service Discovery host daemon. This enables (Samba) hosts,
 
 The container image includes a healthcheck script that can be used to have Docker determine the health status. The healthcheck script is based on input by Steffen Christgau. In order to use it, it is necessary that the HOSTNAME and LOCALSUBNET environment variables are set appropriately (cf. below).
 
+The healthcheck script checks whether the daemon still responds by sending it a valid request and checking for a "success" response code (via curl).
+
 ## Supported environment variables
 HOSTNAME: Samba Netbios name to report.
 
@@ -13,6 +15,8 @@ WORKGROUP: Workgroup name
 DOMAIN: Report being a member of an AD DOMAIN. Disables WORKGROUP if set. 
 
 LOCALSUBNET: The fixed part of your local network IP4 addresse, with points masked by a double backslash, e.g. "192\\\\.168\\\\.1"
+
+DEBUG: If set to 1, will make the healthcheck script output status messages to the docker log
 
 ## Running container
 ### From command line

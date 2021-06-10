@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Original from JonasPed 
+# under Apache 2.0 license
+#
+# modified by hihp (c) 2021
+
 args=( )
 
 if [ ! -z "${HOSTNAME}" ]; then
@@ -17,6 +22,7 @@ if  [ ! -z "${DOMAIN}" ]; then
 	args+=( "-d $DOMAIN " )
 fi
 
+echo "Starting wsdd (Web Services on Devices daemon) by @christgau"
 
 
 exec python wsdd.py ${args}

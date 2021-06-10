@@ -9,7 +9,7 @@ RUN apk --no-cache add curl bash
 
 RUN curl https://raw.githubusercontent.com/christgau/wsdd/v0.6.2/src/wsdd.py -o wsdd.py
 
-COPY docker-cmd.sh wsd.xml healthcheck ./
+COPY docker-cmd.sh healthcheck ./
 
 RUN apk --no-cache add --virtual build-dependencies util-linux
 

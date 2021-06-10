@@ -1,21 +1,41 @@
 #!/bin/bash
 
 # get IP address of host machine on which docker runs
-hostip=$(nslookup ${HOSTNAME} | egrep -o "Address: ${LOCALSUBNET}\.[0-9]*" | egrep -o "${LOCALSUBNET}\.[0-9]*")
+host_ip=$(nslookup ${HOSTNAME} | egrep -o "Address: ${LOCALSUBNET}\.[0-9]*" | egrep -o "${LOCALSUBNET}\.[0-9]*")
 
 # calculate URN-UUID for WSD server
-WSDDUUID=$(uuidgen --sha1 --namespace @dns --name ${HOSTNAME})
+host_uuid=$(uuidgen --sha1 --namespace @dns --name ${HOSTNAME})
 
-# edit WSD server URN-UUID into request data file
-sed -i "s/xxxToxx/${WSDDUUID}/g" wsd.xml
+# generate URN-UUIDs to be used as the messageID and From
+msg_uuid=$(uuidgen --time)
+from_uuid=$(uuidgen)
 
-# make request
-result=$(curl --silent --fail --header 'Content-Type: application/soap+xml' --data @wsd.xml http://${hostip}:5357/${WSDDUUID})
+# make request - the XML template is filled in certain spots with the relevant variables generated above
+curl --silent --fail --header 'Content-Type: application/soap+xml' --data @- http://${host_ip}:5357/${host_uuid} > /dev/null <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing">
+  <soap:Header>
+    <wsa:To>urn:uuid:${host_uuid}</wsa:To>
+    <wsa:Action>http://schemas.xmlsoap.org/ws/2004/09/transfer/Get</wsa:Action>
+    <wsa:MessageID>urn:uuid:${msg_uuid}</wsa:MessageID>
+    <wsa:ReplyTo>
+      <wsa:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:Address>
+    </wsa:ReplyTo>
+    <wsa:From>
+      <wsa:Address>urn:uuid:${from_addr}</wsa:Address>
+    </wsa:From>
+  </soap:Header>
+  <soap:Body></soap:Body>
+</soap:Envelope>
+EOF
 
 # depending on success or failure, return either 0 or 1
 if [ $? -eq 0 ]
 then
+  if [ "${DEBUG}" ==  "1" ]; then printf "%(%Y-%m-%d %T)T %s\n" -1 "- Healthcheck: wsdd responded OK" >> /proc/1/fd/1 ; fi
   exit 0
 fi
+
+printf "%(%Y-%m-%d %T)T %s\n" -1 "- Healthcheck: wsdd ERROR" >> /proc/1/fd/1
 
 exit 1
